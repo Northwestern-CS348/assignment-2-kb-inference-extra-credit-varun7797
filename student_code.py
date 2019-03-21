@@ -142,7 +142,53 @@ class KnowledgeBase(object):
         """
         ####################################################
         # Student code goes here
+        if (isinstance(fact_or_rule, Rule)) and (not self._get_rule(fact_or_rule)):
+            return "Rule is not in the KB"
+        if (isinstance(fact_or_rule, Fact)) and (not self._get_fact(fact_or_rule)):
+            return "Fact is not in the KB"
+        if (not isinstance(fact_or_rule, Rule)) and (not isinstance(fact_or_rule, Fact)):
+            return "Input is neither a Rule nor a Fact"
+        if (isinstance(fact_or_rule, Rule)) or (isinstance(fact_or_rule, Fact)):
+            return self.helper(fact_or_rule, 0)
 
+
+
+    def helper(self, fact_or_rule, index):
+    
+        resstr = ""
+        fact = ""
+        rule = ""
+
+        if isinstance(fact_or_rule, Fact):
+            fact = self._get_fact(fact_or_rule)
+            resstr = resstr + "fact: " + fact_or_rule.statement.__str__()
+        elif isinstance(fact_or_rule, Rule):
+            rule = self._get_rule(fact_or_rule)
+            resstr = resstr + "rule: ("
+            for x in fact_or_rule.lhs:
+                resstr = resstr + x.__str__() + ", "
+            resstr = resstr[:-2] + ") -> " + fact_or_rule.rhs.__str__()
+    
+        resstr = index * " " + resstr
+        
+        if (fact):
+            if (fact.asserted):
+                resstr = resstr + " ASSERTED\n"
+            else:
+                resstr = resstr + "\n"
+            for i in fact.supported_by:
+                resstr = resstr + " " * (2 + index) + "SUPPORTED BY\n"
+                resstr = resstr + self.helper(i[0], 4 + index) + self.helper(i[1], 4 + index)
+        elif (rule):
+            if (rule.asserted):
+                resstr = resstr + " ASSERTED\n"
+            else:
+                resstr = resstr + "\n"
+            for i in rule.supported_by:
+                resstr = resstr + " " * (2 + index) + "SUPPORTED BY\n"
+                resstr = resstr + self.helper(i[0], 4 + index) + self.helper(i[1], 4 + index)
+
+        return resstr
 
 class InferenceEngine(object):
     def fc_infer(self, fact, rule, kb):
